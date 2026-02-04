@@ -4,5 +4,6 @@ CREATE TABLE mdm_admin.employees (
     emp_name VARCHAR(100) NOT NULL,
     department VARCHAR(50),
     salary NUMERIC(10,2),
+    age NUMERIC(10,2), --added ne column
     created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
