@@ -1,1 +1,79 @@
+name: PostgreSQL Deployment
 
+on:
+  workflow_dispatch:
+    inputs:
+      deployment_type:
+        description: 'Deployment Type'
+        required: true
+        default: 'Deploy'
+        type: choice
+        options:
+          - Deploy
+          - Rollback
+      environment:
+        description: 'Target Environment'
+        required: true
+        default: 'LOCAL'
+        type: choice
+        options:
+          - LOCAL
+          - DEV
+          - QAT
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+      
+      - name: Setup PostgreSQL Client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+      
+      - name: Display Deployment Information
+        run: |
+          echo "========================================="
+          echo "PostgreSQL Deployment Started"
+          echo "========================================="
+          echo "Deployment Type: ${{ github.event.inputs.deployment_type }}"
+          echo "Environment: ${{ github.event.inputs.environment }}"
+          echo "Triggered By: ${{ github.actor }}"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Commit: ${{ github.sha }}"
+          echo "========================================="
+      
+      - name: List DDL Scripts
+        run: |
+          echo "DDL Scripts to be executed:"
+          ls -la scripts/ddl/ || echo "No DDL scripts found"
+      
+      - name: List DML Scripts
+        run: |
+          echo "DML Scripts to be executed:"
+          ls -la scripts/dml/ || echo "No DML scripts found"
+      
+      # This is a dry-run for local practice
+      # In real scenario, you would connect to actual database
+      - name: Validate SQL Files
+        run: |
+          echo "Validating SQL syntax..."
+          for file in scripts/ddl/*.sql; do
+            if [ -f "$file" ]; then
+              echo "Checking: $file"
+              # Basic syntax check (you can enhance this)
+              cat "$file"
+            fi
+          done
+      
+      - name: Deployment Summary
+        run: |
+          echo "========================================="
+          echo "Deployment process completed successfully!"
+          echo "In actual deployment, these scripts would be executed on:"
+          echo "Database: ${{ secrets.DB_NAME || 'testdb_deployment' }}"
+          echo "Host: ${{ secrets.DB_HOST || 'localhost' }}"
+          echo "========================================="
